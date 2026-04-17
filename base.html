@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CyberShield AI{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #050a14;
+            --bg-secondary: #0a1628;
+            --bg-card: #0d1f3c;
+            --accent-cyan: #00d4ff;
+            --accent-green: #00ff88;
+            --accent-red: #ff4757;
+            --accent-orange: #ffa502;
+            --text-primary: #e8f4fd;
+            --text-muted: #6b8cad;
+            --border-color: #1a3a5c;
+            --gradient-1: linear-gradient(135deg, #00d4ff22, #00ff8822);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .navbar {
+            background: rgba(5, 10, 20, 0.95) !important;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-cyan) !important;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand span { color: var(--accent-green); }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem !important;
+        }
+
+        .nav-link:hover, .nav-link.active { color: var(--accent-cyan) !important; }
+
+        .nav-link i { margin-right: 6px; }
+
+        .btn-cyber {
+            background: linear-gradient(135deg, var(--accent-cyan), #0099cc);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .btn-cyber:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+            color: #000;
+        }
+
+        .btn-danger-cyber {
+            background: linear-gradient(135deg, var(--accent-red), #cc0033);
+            color: #fff;
+            font-weight: 700;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+        }
+
+        .card-cyber {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-cyber::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+            padding: 2rem 0;
+        }
+
+        .badge-phishing {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-legitimate {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .alert-cyber {
+            border-radius: 10px;
+            border: none;
+            font-weight: 500;
+        }
+
+        .alert-cyber.alert-danger {
+            background: rgba(255, 71, 87, 0.15);
+            color: #ff6b7a;
+            border: 1px solid rgba(255, 71, 87, 0.3);
+        }
+
+        .alert-cyber.alert-success {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00d4a8;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .card-cyber { padding: 1rem; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block nav %}
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/dashboard">
+            <i class="fas fa-shield-halved me-2"></i>Cyber<span>Shield</span> AI
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <i class="fas fa-bars" style="color: var(--accent-cyan);"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="/dashboard">
+                        <i class="fas fa-chart-pie"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/scan' %}active{% endif %}" href="/scan">
+                        <i class="fas fa-magnifying-glass"></i>Scan URL
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small" id="navbar-username"></span>
+                <button class="btn btn-sm btn-danger-cyber" onclick="logout()">
+                    <i class="fas fa-right-from-bracket me-1"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
+<div class="main-content">
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    function getToken() {
+        return localStorage.getItem('access_token');
+    }
+
+    async function authFetch(url, options = {}) {
+        const token = getToken();
+        options.headers = options.headers || {};
+        if (token) options.headers['Authorization'] = 'Bearer ' + token;
+        options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
+        const res = await fetch(url, options);
+        if (res.status === 401) {
+            localStorage.clear();
+            window.location.href = '/login';
+            return null;
+        }
+        return res;
+    }
+
+    async function logout() {
+        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+
+    // Show username in navbar
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (user) {
+        const el = document.getElementById('navbar-username');
+        if (el) el.textContent = '👤 ' + user.username;
+    }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

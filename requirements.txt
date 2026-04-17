@@ -1,0 +1,11 @@
+flask==3.0.0
+flask-bcrypt==1.0.1
+flask-jwt-extended==4.6.0
+
+scikit-learn==1.4.0
+pandas==2.2.0
+numpy==1.26.4
+
+gunicorn==21.2.0
+
+python-dotenv==1.0.1

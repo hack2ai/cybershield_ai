@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – CyberShield AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #050a14;
+            --bg-secondary: #0a1628;
+            --bg-card: #0d1f3c;
+            --accent-cyan: #00d4ff;
+            --accent-green: #00ff88;
+            --accent-red: #ff4757;
+            --accent-orange: #ffa502;
+            --accent-purple: #a855f7;
+            --text-primary: #e8f4fd;
+            --text-muted: #6b8cad;
+            --border-color: #1a3a5c;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .navbar {
+            background: rgba(5, 10, 20, 0.95) !important;
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--accent-cyan) !important;
+            text-decoration: none;
+        }
+
+        .navbar-brand span { color: var(--accent-green); }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            font-weight: 500;
+            transition: color 0.2s;
+            padding: 0.5rem 1rem !important;
+            text-decoration: none;
+        }
+
+        .nav-link:hover, .nav-link.active { color: var(--accent-cyan) !important; }
+
+        .btn-logout {
+            background: rgba(255, 71, 87, 0.15);
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 71, 87, 0.3);
+            padding: 0.4rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 71, 87, 0.3);
+        }
+
+        .main-content {
+            position: relative;
+            z-index: 1;
+            padding: 2rem 0 3rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Stat Cards */
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+
+        .stat-card.cyan::before { background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent); }
+        .stat-card.green::before { background: linear-gradient(90deg, transparent, var(--accent-green), transparent); }
+        .stat-card.red::before { background: linear-gradient(90deg, transparent, var(--accent-red), transparent); }
+        .stat-card.orange::before { background: linear-gradient(90deg, transparent, var(--accent-orange), transparent); }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.cyan { background: rgba(0, 212, 255, 0.1); color: var(--accent-cyan); }
+        .stat-icon.green { background: rgba(0, 255, 136, 0.1); color: var(--accent-green); }
+        .stat-icon.red { background: rgba(255, 71, 87, 0.1); color: var(--accent-red); }
+        .stat-icon.orange { background: rgba(255, 165, 2, 0.1); color: var(--accent-orange); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Chart Cards */
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+        }
+
+        .chart-card h6 {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        /* Model Table */
+        .model-table { width: 100%; border-collapse: collapse; }
+
+        .model-table th {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        .model-table td {
+            padding: 0.75rem 0.8rem;
+            border-bottom: 1px solid rgba(26, 58, 92, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .model-table tr:last-child td { border-bottom: none; }
+
+        .model-table tr:hover td { background: rgba(0, 212, 255, 0.03); }
+
+        .best-badge {
+            background: rgba(0, 255, 136, 0.15);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* History */
+        .history-item {
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .history-url {
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .badge-phishing {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--accent-red);
+            border: 1px solid rgba(255, 71, 87, 0.4);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .badge-legitimate {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .metric-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            margin-top: 4px;
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .btn-scan {
+            background: linear-gradient(135deg, var(--accent-cyan), #0099cc);
+            color: #000;
+            font-weight: 700;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-family: 'Space Grotesk', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-scan:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+            color: #000;
+        }
+
+        .loading-skeleton {
+            background: linear-gradient(90deg, var(--bg-card) 25%, rgba(26,58,92,0.4) 50%, var(--bg-card) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+            height: 2rem;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg">
+    <div class="container">
+        <a class="navbar-brand" href="/dashboard">
+            <i class="fas fa-shield-halved me-2"></i>Cyber<span>Shield</span> AI
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <i class="fas fa-bars" style="color: var(--accent-cyan);"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/dashboard">
+                        <i class="fas fa-chart-pie me-1"></i>Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/scan">
+                        <i class="fas fa-magnifying-glass me-1"></i>Scan URL
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center gap-2">
+                <span style="color: var(--text-muted); font-size: 0.85rem;" id="navbar-user"></span>
+                <button class="btn-logout" onclick="logout()">
+                    <i class="fas fa-right-from-bracket me-1"></i>Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="main-content">
+    <div class="container">
+        <div class="page-header d-flex align-items-start justify-content-between flex-wrap gap-3">
+            <div>
+                <h2><i class="fas fa-chart-pie me-2" style="color: var(--accent-cyan);"></i>Security Dashboard</h2>
+                <p>Real-time phishing detection analytics and model performance</p>
+            </div>
+            <a href="/scan" class="btn-scan">
+                <i class="fas fa-magnifying-glass"></i>Scan URL
+            </a>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card cyan">
+                    <div class="stat-icon cyan"><i class="fas fa-link"></i></div>
+                    <div class="stat-value" id="stat-total">—</div>
+                    <div class="stat-label">URLs Scanned (You)</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card red">
+                    <div class="stat-icon red"><i class="fas fa-skull-crossbones"></i></div>
+                    <div class="stat-value" id="stat-phishing">—</div>
+                    <div class="stat-label">Phishing Detected</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card green">
+                    <div class="stat-icon green"><i class="fas fa-circle-check"></i></div>
+                    <div class="stat-value" id="stat-legit">—</div>
+                    <div class="stat-label">Legitimate URLs</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card orange">
+                    <div class="stat-icon orange"><i class="fas fa-globe"></i></div>
+                    <div class="stat-value" id="stat-global">—</div>
+                    <div class="stat-label">Total (All Users)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-5">
+                <div class="chart-card h-100">
+                    <h6><i class="fas fa-chart-donut me-2"></i>Scan Results Distribution</h6>
+                    <div style="position: relative; height: 220px;">
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="d-flex justify-content-center gap-3 mt-2">
+                        <span style="font-size: 0.8rem;"><span style="color:var(--accent-red);">●</span> Phishing</span>
+                        <span style="font-size: 0.8rem;"><span style="color:var(--accent-green);">●</span> Legitimate</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="chart-card h-100">
+                    <h6><i class="fas fa-brain me-2"></i>Model Performance Comparison</h6>
+                    <div style="position: relative; height: 220px;">
+                        <canvas id="modelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Model Metrics + Recent Activity -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="fas fa-robot me-2"></i>ML Model Metrics</h6>
+                    <div id="model-table-container">
+                        <div class="loading-skeleton mb-2"></div>
+                        <div class="loading-skeleton mb-2"></div>
+                        <div class="loading-skeleton"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-card">
+                    <h6><i class="fas fa-clock-rotate-left me-2"></i>Recent Activity</h6>
+                    <div id="recent-activity">
+                        <div class="loading-skeleton mb-2"></div>
+                        <div class="loading-skeleton mb-2"></div>
+                        <div class="loading-skeleton"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    if (!localStorage.getItem('access_token')) window.location.href = '/login';
+
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (user) {
+        document.getElementById('navbar-user').textContent = '👤 ' + user.username;
+    }
+
+    function getToken() { return localStorage.getItem('access_token'); }
+
+    async function authFetch(url, opts = {}) {
+        opts.headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken(), ...opts.headers };
+        opts.credentials = 'include';
+        const res = await fetch(url, opts);
+        if (res.status === 401) { localStorage.clear(); window.location.href = '/login'; return null; }
+        return res;
+    }
+
+    async function logout() {
+        await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+        localStorage.clear();
+        window.location.href = '/login';
+    }
+
+    let pieChartInst = null;
+    let modelChartInst = null;
+
+    async function loadDashboard() {
+        try {
+            const res = await authFetch('/api/stats');
+            if (!res) return;
+            const { data } = await res.json();
+
+            // Update stat cards
+            const us = data.user_stats;
+            const gs = data.global_stats;
+            document.getElementById('stat-total').textContent = us.total;
+            document.getElementById('stat-phishing').textContent = us.phishing;
+            document.getElementById('stat-legit').textContent = us.legitimate;
+            document.getElementById('stat-global').textContent = gs.total;
+
+            // Pie chart
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            if (pieChartInst) pieChartInst.destroy();
+            pieChartInst = new Chart(pieCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Phishing', 'Legitimate'],
+                    datasets: [{
+                        data: [us.phishing || 0, us.legitimate || 0],
+                        backgroundColor: ['rgba(255,71,87,0.8)', 'rgba(0,255,136,0.7)'],
+                        borderColor: ['rgba(255,71,87,1)', 'rgba(0,255,136,1)'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => ` ${ctx.label}: ${ctx.parsed} (${us.total > 0 ? Math.round(ctx.parsed/us.total*100) : 0}%)`
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Model chart
+            const metrics = data.model_metrics;
+            if (metrics && metrics.length > 0) {
+                renderModelChart(metrics);
+                renderModelTable(metrics);
+            } else {
+                document.getElementById('model-table-container').innerHTML = '<p class="empty-state">No model data yet. <a href="#" onclick="trainModels()" style="color:var(--accent-cyan)">Train models</a></p>';
+            }
+
+            // Recent activity
+            const recent = data.recent_scans;
+            const activityDiv = document.getElementById('recent-activity');
+            if (recent && recent.length > 0) {
+                activityDiv.innerHTML = recent.map(item => `
+                    <div class="history-item">
+                        <div class="history-url" title="${item.url}">${item.url}</div>
+                        <span class="badge-${item.result.toLowerCase()}">${item.result}</span>
+                    </div>
+                `).join('');
+            } else {
+                activityDiv.innerHTML = '<div class="empty-state"><i class="fas fa-inbox fa-2x mb-2"></i><br>No scans yet. <a href="/scan" style="color:var(--accent-cyan)">Scan a URL</a></div>';
+            }
+
+        } catch (err) {
+            console.error('Dashboard load error:', err);
+        }
+    }
+
+    function renderModelChart(metrics) {
+        const modelCtx = document.getElementById('modelChart').getContext('2d');
+        if (modelChartInst) modelChartInst.destroy();
+        modelChartInst = new Chart(modelCtx, {
+            type: 'bar',
+            data: {
+                labels: metrics.map(m => m.model_name),
+                datasets: [
+                    {
+                        label: 'Accuracy',
+                        data: metrics.map(m => m.accuracy),
+                        backgroundColor: 'rgba(0,212,255,0.7)',
+                        borderColor: 'rgba(0,212,255,1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Precision',
+                        data: metrics.map(m => m.precision_score),
+                        backgroundColor: 'rgba(0,255,136,0.6)',
+                        borderColor: 'rgba(0,255,136,1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Recall',
+                        data: metrics.map(m => m.recall_score),
+                        backgroundColor: 'rgba(255,165,2,0.6)',
+                        borderColor: 'rgba(255,165,2,1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'F1 Score',
+                        data: metrics.map(m => m.f1_score),
+                        backgroundColor: 'rgba(168,85,247,0.6)',
+                        borderColor: 'rgba(168,85,247,1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#6b8cad', font: { size: 11 }, boxWidth: 12 }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(26,58,92,0.5)' },
+                        ticks: { color: '#6b8cad', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(26,58,92,0.5)' },
+                        ticks: { color: '#6b8cad', font: { size: 10 }, callback: v => v + '%' },
+                        min: 60,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    function renderModelTable(metrics) {
+        const best = metrics.reduce((a, b) => a.accuracy > b.accuracy ? a : b);
+        document.getElementById('model-table-container').innerHTML = `
+            <table class="model-table">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Accuracy</th>
+                        <th>F1 Score</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${metrics.map(m => `
+                        <tr>
+                            <td style="font-weight: 500;">${m.model_name}</td>
+                            <td>
+                                <span style="font-family:'JetBrains Mono',monospace; color: var(--accent-cyan);">${m.accuracy}%</span>
+                                <div class="metric-bar"><div class="metric-fill" style="background:var(--accent-cyan);width:${m.accuracy}%"></div></div>
+                            </td>
+                            <td>
+                                <span style="font-family:'JetBrains Mono',monospace; color: var(--accent-purple);">${m.f1_score}%</span>
+                            </td>
+                            <td>${m.model_name === best.model_name ? '<span class="best-badge">★ Best</span>' : ''}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+    }
+
+    async function trainModels() {
+        try {
+            const res = await authFetch('/api/retrain', { method: 'POST' });
+            if (res) {
+                await loadDashboard();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    loadDashboard();
+    // Refresh every 30 seconds
+    setInterval(loadDashboard, 30000);
+</script>
+</body>
+</html>
